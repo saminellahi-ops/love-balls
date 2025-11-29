@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Magic Ball of Love</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Magic Ball of Love">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23ff5c8d'/%3E%3Ctext x='50' y='58' font-size='40' text-anchor='middle' fill='white' font-family='Helvetica,Arial'%3E%F0%9F%92%96%3C/text%3E%3C/svg%3E">
+  <style>
+    :root{--bg:#0b1020;--ball:#081226;--accent:#ff5c8d;--triangle:#0a1326;--text:#ffffff}
+    html,body{height:100%;width:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#02030a 0%, #081226 60%);color:var(--text)}
+    .app{width:100%;max-width:520px;padding:24px;box-sizing:border-box;text-align:center;overflow:hidden;margin:0;}
+    h1{margin:0 0 8px;font-size:20px;letter-spacing:0.6px}
+    p.lead{margin:0 0 18px;color:rgba(255,255,255,0.8)}
+
+    /* Ball */
+    .stage{height:420px;display:flex;align-items:center;justify-content:center}
+    .ball{width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), rgba(255,255,255,0.02) 10%, var(--ball) 40%);box-shadow:0 8px 30px rgba(0,0,0,0.6), inset 0 -6px 30px rgba(255,255,255,0.02);position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .18s ease}
+    .ball:active{transform:scale(0.98)}
+    .glass{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+
+    /* inner circle */
+    .inner{width:140px;height:140px;border-radius:50%;background:linear-gradient(180deg,#000814,#07102a);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 8px 18px rgba(255,255,255,0.03);position:relative}
+
+    /* triangle */
+    .triangle{width:0;height:0;border-left:40px solid transparent;border-right:40px solid transparent;border-bottom:70px solid var(--triangle);transform:translateY(-6px) rotate(0deg);display:flex;align-items:center;justify-content:center;position:relative}
+    .triangle .msg{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:180px;color:#fff;font-weight:600;font-size:14px;line-height:1.2;text-align:center;letter-spacing:0.3px}
+
+    .hint{font-size:12px;color:rgba(255,255,255,0.6);margin-top:14px}
+
+    /* hearts */
+    .hearts{position:absolute;inset:0;pointer-events:none}
+    .heart{position:absolute;width:20px;height:20px;transform:translate(-50%,-50%) scale(0);opacity:0;border-radius:4px}
+    .heart:before,.heart:after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:var(--accent)}
+    .heart:before{left:10px}
+    .heart:after{top:0;left:0}
+
+    /* overlay emoji/icon layer */
+    .overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+    .overlay .icon{font-size:110px;opacity:0.06;transform:scale(1);display:inline-block;animation:float 5s ease-in-out infinite}
+    .overlay .shake{animation:shake 1.6s ease-in-out infinite}
+
+    @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+    @keyframes shake{0%{transform:translateX(0) rotate(0)}25%{transform:translateX(-6px) rotate(-4deg)}50%{transform:translateX(6px) rotate(4deg)}75%{transform:translateX(-4px) rotate(-2deg)}100%{transform:translateX(0) rotate(0)}}
+
+    /* footer */
+    .controls{margin-top:18px;display:flex;gap:10px;justify-content:center}
+    button{background:transparent;border:1px solid rgba(255,255,255,0.08);padding:8px 12px;border-radius:10px;color:var(--text);font-weight:600}
+    button.primary{background:var(--accent);border-color:transparent;color:white;box-shadow:0 6px 18px rgba(255,92,141,0.22)}
+
+    @media (max-width:420px){.ball{width:230px;height:230px}.inner{width:120px;height:120px}.triangle{border-left:32px solid transparent;border-right:32px solid transparent;border-bottom:60px solid var(--triangle)}.triangle .msg{width:150px;font-size:13px}}
+
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 20px rgba(255,92,141,0.18), 0 0 40px rgba(255,92,141,0.08); }
+      50% { box-shadow: 0 0 40px rgba(255,92,141,0.36), 0 0 70px rgba(255,92,141,0.16); }
+      100% { box-shadow: 0 0 20px rgba(255,92,141,0.18), 0 0 40px rgba(255,92,141,0.08); }
+    }
+
+    .ball{animation:glowPulse 4s ease-in-out infinite;}
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <h1>Magic Ball of Love ❤️</h1>
+    <p style="margin-top:-4px;font-size:14px;color:#ff5c8d;font-weight:600;">This app is for you, Marko 💖</p>
+    <p class="lead">Shake or tap the ball to reveal a message.</p>
+
+    <div class="stage">
+      <div class="ball" id="ball" title="Tap or shake">
+        <div class="glass"></div>
+        <div class="inner">
+          <div class="triangle" id="triangle" aria-live="polite">
+            <div class="msg" id="msg">Tap or shake for love ✨</div>
+          </div>
+        </div>
+        <div class="overlay" id="overlay"></div>
+        <div class="hearts" id="hearts"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -- Messages: change these to personalize --
+    const MESSAGES = [
+      "You make me feel so safe, always.",
+      "I can rely on you more than anyone.",
+      "You are my strongest man — my protector.",
+      "Now it's time… your birthday gift is here.",
+      "You can finally get the painting I drew for you.",
+      "Come here… I want to give you a kiss.",
+      "If you want… You can bite me too.",
+      "I love you more than words can hold."
+    ];
+
+    // Small mapping of emoji/icon for each message (large, low-opacity background)
+    const ICON_MAP = {
+      "You make me feel so safe, always.": '🛡️',
+      "I can rely on you more than anyone.": '🤝',
+      "You are my strongest man — my protector.": '💪',
+      "Now it's time… your birthday gift is here.": '🎁',
+      "You can finally get the painting I drew for you.": '🖼️',
+      "Come here… I want to give you a kiss.": '💋',
+      "If you want… You can bite me too.": '😉',
+      "I love you more than words can hold.": '❤️'
+    };
+
+    // Backgrounds for each message
+    const BACKGROUNDS = {
+      "You make me feel so safe, always.": "linear-gradient(160deg, #0b1020, #1a2a50)",
+      "I can rely on you more than anyone.": "linear-gradient(160deg, #120b1f, #2d174d)",
+      "You are my strongest man — my protector.": "linear-gradient(160deg, #1a0b0d, #4d1a2a)",
+      "Now it's time… your birthday gift is here.": "linear-gradient(160deg, #090f23, #233a75)",
+      "You can finally get the painting I drew for you.": "linear-gradient(160deg, #0d1a14, #295f47)",
+      "Come here… I want to give you a kiss.": "linear-gradient(160deg, #210912, #7d203d)",
+      "If you want… You can bite me too.": "linear-gradient(160deg, #1a0d0f, #5a1f27)",
+      "I love you more than words can hold.": "linear-gradient(160deg, #0e0d1a, #3a3970)"
+    };
+
+    // Each message can have its own base frequency for sound (Hz)
+    const SOUND_MAP = {
+      "You make me feel so safe, always.": 420,
+      "I can rely on you more than anyone.": 520,
+      "You are my strongest man — my protector.": 360,
+      "Now it's time… your birthday gift is here.": 700,
+      "You can finally get the painting I drew for you.": 560,
+      "Come here… I want to give you a kiss.": 480,
+      "If you want… You can bite me too.": 640,
+      "I love you more than words can hold.": 300
+    };
+
+    // Elements
+    const ball = document.getElementById('ball');
+    const msg = document.getElementById('msg');
+    const triangle = document.getElementById('triangle');
+    const revealBtn = document.getElementById('reveal');
+    const addBtn = document.getElementById('add');
+    const hearts = document.getElementById('hearts');
+    const overlay = document.getElementById('overlay');
+
+    let animating = false;
+    let ended = false;
+
+    function randomMessage(){
+      if(MESSAGES.length === 0){ return "__END__"; }
+      const i = Math.floor(Math.random()*MESSAGES.length);
+      return MESSAGES.splice(i,1)[0];
+    }
+
+    function checkEnd(text){
+      if(text === "__END__"){
+        endApp();
+        return true;
+      }
+      return false;
+    }
+
+    function showMessage(text){
+      if(checkEnd(text)) return;
+      if(animating || ended) return;
+      animating = true;
+
+      // set background
+      document.body.style.transition = 'background 380ms ease';
+      document.body.style.background = BACKGROUNDS[text] || "linear-gradient(180deg,#02030a 0%, #081226 60%)";
+
+      // animate triangle and update text
+      triangle.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1)';
+      triangle.style.transform = 'translateY(-6px) rotate(-10deg) scale(0.98)';
+      setTimeout(()=>{
+        msg.textContent = text;
+        triangle.style.transform = 'translateY(-6px) rotate(0deg) scale(1)';
+      },220);
+
+      // spawn hearts and overlay icon
+      spawnHearts();
+      showOverlayFor(text);
+
+      setTimeout(()=>{animating=false;},1000);
+      playSoundFor(text);
+    }
+
+    function spawnHearts(){
+      for(let i=0;i<10;i++){
+        const h = document.createElement('div');
+        h.className='heart';
+        hearts.appendChild(h);
+        const x = Math.random()*100; const y = Math.random()*100;
+        h.style.left = x + '%'; h.style.top = y + '%';
+        const scale = 0.6 + Math.random()*1.2;
+        h.animate([
+          {transform: `translate(-50%,-50%) scale(0)`, opacity:0},
+          {transform: `translate(-50%,-60%) scale(${scale})`, opacity:1},
+          {transform: `translate(-50%,-120%) scale(${scale*0.6})`, opacity:0}
+        ],{duration:1200+Math.random()*600,easing:'cubic-bezier(.2,.85,.32,1)'});
+        setTimeout(()=>h.remove(),2200);
+      }
+    }
+
+    function showOverlayFor(text){
+      overlay.innerHTML = '';
+      const icon = ICON_MAP[text];
+      if(!icon) return;
+
+      // Create multiple icons across the screen
+      const count = 12; // number of icons
+      for(let i = 0; i < count; i++){
+        const el = document.createElement('div');
+        el.className = 'icon';
+        el.textContent = icon;
+
+        // more visible
+        el.style.opacity = 0.14;
+        el.style.position = 'absolute';
+        el.style.left = Math.random()*100 + '%';
+        el.style.top = Math.random()*100 + '%';
+        el.style.fontSize = (90 + Math.random()*40) + 'px';
+
+        // For gift/painting add shake
+        if(text.includes('gift') || text.includes('painting')) el.classList.add('shake');
+
+        overlay.appendChild(el);
+
+        // animations
+        el.animate([{opacity:0},{opacity:0.14}],{duration:350,fill:'forwards'});
+        setTimeout(()=>{
+          el.animate([{opacity:0.14},{opacity:0}],{duration:1500,fill:'forwards'});
+          setTimeout(()=>el.remove(),1800);
+        },1800 + Math.random()*600);
+      }
+    }
+
+    function playSoundFor(text){
+      try{
+        const base = SOUND_MAP[text] || 520;
+        const ctx = new (window.AudioContext||window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type='sine';
+        o.frequency.setValueAtTime(base,ctx.currentTime);
+        g.gain.setValueAtTime(0.0001,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.08,ctx.currentTime+0.02);
+        o.connect(g); g.connect(ctx.destination); o.start();
+        // a short glide down for a pleasing effect
+        o.frequency.exponentialRampToValueAtTime(base*0.45, ctx.currentTime+0.45);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.6);
+        setTimeout(()=>{try{o.stop(); ctx.close();}catch(e){}},800);
+      }catch(e){/* audio may be blocked or unsupported */}
+    }
+
+    function endApp(){
+      ended = true;
+      // final message
+      msg.textContent = "Happy Birthday, my love 🎂💖";
+      document.body.style.background = "linear-gradient(160deg,#2b0d24,#8a2a64)";
+      // celebratory overlay
+      overlay.innerHTML = '<div class="icon">🎉</div>';
+      const el = overlay.firstChild;
+      el.animate([{opacity:0},{opacity:0.08}],{duration:200,fill:'forwards'});
+      setTimeout(()=>{el.animate([{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}],{duration:1200})},120);
+      // optionally disable interactions visually
+      ball.style.cursor='default';
+    }
+
+    // Click / tap
+    ball.addEventListener('click', ()=>{
+      showMessage(randomMessage());
+    });
+    revealBtn.addEventListener('click', ()=>showMessage(randomMessage()));
+
+    // -- Shake detection fallback --
+    (function(){
+      if(!('DeviceMotionEvent' in window)) return;
+      let last = {x:null,y:null,z:null,time:0};
+      const threshold = 18; // tweak sensitivity
+      window.addEventListener('devicemotion', (e)=>{
+        const a = e.accelerationIncludingGravity;
+        if(!a) return;
+        const now = Date.now();
+        if(now - last.time < 250) return; // rate limit
+        if(last.x!==null){
+          const dx = Math.abs(a.x - last.x);
+          const dy = Math.abs(a.y - last.y);
+          const dz = Math.abs(a.z - last.z);
+          if((dx+dy+dz) > threshold){
+            showMessage(randomMessage());
+            last.time = now;
+          }
+        }
+        last.x = a.x; last.y = a.y; last.z = a.z;
+      });
+    })();
+
+    // iOS Add to Home Screen instructions
+    addBtn.addEventListener('click', ()=>{
+      const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      if(isiOS){
+        alert('Open Safari share menu → Add to Home Screen. Then tap the icon to launch like an app.\n\nIf using Chrome on iPhone, use Safari for the Add to Home Screen step.');
+      }else{
+        alert('On Android use the browser menu → Add to Home Screen, or use "Install" if your browser shows it.');
+      }
+    });
+
+    // Small accessibility: keyboard
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); showMessage(randomMessage()); } });
+
+    // Allow quick personalization via URL: ?m=Love%20you|You%20are%20amazing
+    (function loadFromURL(){
+      const qp = new URLSearchParams(location.search).get('m');
+      if(!qp) return;
+      const custom = qp.split('|').map(s=>decodeURIComponent(s)).filter(Boolean);
+      if(custom.length) {
+        MESSAGES.unshift(...custom);
+      }
+    })();
+
+    // Prevent overscrolling on iOS when saved to home screen
+    document.addEventListener('touchmove', function(e){ if(document.scrollingElement && document.scrollingElement.scrollTop===0) e.preventDefault(); }, {passive:false});
+
+  </script>
+</body>
+</html>
